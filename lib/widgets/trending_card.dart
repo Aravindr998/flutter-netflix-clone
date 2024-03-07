@@ -15,38 +15,39 @@ class TrendingCard extends StatefulWidget {
 
 class _TrendingCardState extends State<TrendingCard>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
+  late AnimationController controller;
+  late Animation<double> _animationX;
+  late Animation<double> _animationY;
   double gyroX = 0;
   double gyroY = 0;
   @override
   void initState() {
-    _animationController = AnimationController(
+    super.initState();
+    controller = AnimationController(
       vsync: this,
       duration: const Duration(
-        milliseconds: 300,
+        milliseconds: 2000,
       ),
-    )..repeat(reverse: true);
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
+    )..reverse();
+    _animationX = Tween<double>(begin: 0, end: gyroX/50).animate(controller);
+    _animationY = Tween<double>(begin: 0, end: gyroY/50).animate(controller);
     gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval).listen(
       (GyroscopeEvent event) {
         if (event.x != gyroX || event.y != gyroY) {
           setState(() {
+            _animationX = Tween<double>(begin: gyroX/10, end: event.x/10).animate(controller);
+            _animationY = Tween<double>(begin: gyroY/10, end: event.y/10).animate(controller);
             gyroX = event.x;
             gyroY = event.y;
           });
         }
       },
     );
-    super.initState();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -77,12 +78,12 @@ class _TrendingCardState extends State<TrendingCard>
       }
     }
     return AnimatedBuilder(
-      animation: _animation,
+      animation: Listenable.merge([_animationX, _animationY]),
       builder: (ctx, child) => Transform(
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.001)
-          ..rotateX(gyroX / 50)
-          ..rotateY(gyroY / 50),
+          ..rotateX(_animationX.value)
+          ..rotateY(_animationY.value),
         alignment: FractionalOffset.center,
         child: Card(
           clipBehavior: Clip.antiAliasWithSaveLayer,

@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:netflix_clone/api/network_request.dart';
 import 'package:netflix_clone/widgets/exclusive_card.dart';
@@ -46,10 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         genre = (genreData['genres'] as List)
             .where(
-                (item) => data['results'][1]['genre_ids'].contains(item['id']))
+                (item) => data['results'][0]['genre_ids'].contains(item['id']))
             .map<String>((item) => item['name'] as String)
             .toList();
-        trending = data['results'][1];
+        trending = data['results'][0];
         trendingList = data['results'];
         isLoading = false;
       });
